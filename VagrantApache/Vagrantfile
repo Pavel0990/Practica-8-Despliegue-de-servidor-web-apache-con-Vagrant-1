@@ -1,0 +1,26 @@
+Vagrant.configure("2") do |config|
+  # Usamos una caja base de Ubuntu 20.04
+  config.vm.box = "ubuntu/bionic64"
+  
+  # Configuración de la red para IP estática
+  config.vm.network "private_network", type: "dhcp"
+  config.vm.network "private_network", type: "static", ip: "192.168.33.10"
+
+  # Asignar recursos a la máquina virtual
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "512"  # 512MB de RAM
+    vb.cpus = 1        # 1 CPU
+  end
+
+  # Configuración para la sincronización de carpetas (compartir el directorio local con el servidor web)
+  config.vm.synced_folder "./web", "/var/www/html"
+
+  # Configurar el servidor Apache en la máquina virtual
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get update
+    sudo apt-get install -y apache2
+    sudo systemctl enable apache2
+    sudo systemctl start apache2
+    echo 'Hola Mundo desde Apache' | sudo tee /var/www/html/index.html
+  SHELL
+end
